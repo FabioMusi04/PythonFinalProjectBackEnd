@@ -1,0 +1,24 @@
+from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
+
+Base = declarative_base()  # SQLAlchemy Base class
+
+class User(Base):  # Inherit from Base
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True, nullable=False)
+    name = Column(String, nullable=False)
+    surname = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    is_active = Column(Boolean, default=False)
+    hashed_password = Column(String, nullable=False)
+    salt = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    # Additional fields
+    phone_number = Column(String, nullable=True)
+    address = Column(String, nullable=True)
+    date_of_birth = Column(DateTime, nullable=True)
+    profile_picture = Column(String, nullable=True)
