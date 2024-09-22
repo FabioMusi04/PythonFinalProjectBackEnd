@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -13,7 +13,7 @@ class User(Base):  # Inherit from Base
     email = Column(String, unique=True, index=True, nullable=False)
     is_active = Column(Boolean, default=False)
     hashed_password = Column(String, nullable=False)
-    salt = Column(String, nullable=False)
+    role = Column(Enum("user", "admin"), nullable=False, default='user')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 

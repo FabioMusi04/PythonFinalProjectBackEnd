@@ -12,3 +12,9 @@ async_session = sessionmaker(
 )
 
 Base.metadata.create_all(bind=sync_engine)
+
+done = False
+if done:
+    Base.metadata.drop_all(bind=sync_engine)
+    Base.metadata.create_all(bind=sync_engine)
+    print("All tables dropped and created")

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.future import select
 from src.services.SQLite.index import async_session
 from src.api.users.model import User
 from pydantic import BaseModel
 import src.services.auth.index as auth
-from datetime import datetime
+from passlib.hash import pbkdf2_sha256 
 
 app = APIRouter()
+auth_scheme = HTTPBearer()
 
 
 class LoginRequest(BaseModel):
@@ -20,8 +22,11 @@ async def login(login_request: LoginRequest):
         result = await conn.execute(query)
         user = result.scalars().first()
 
-        if user is None or not user.verify_password(login_request.password):
-            return {"error": "Invalid credentials"}
+        if user is None:
+            return HTTPException(status_code=404, detail="User not found")
+
+        if not pbkdf2_sha256.verify(login_request.password, user.hashed_password):
+            return HTTPException(status_code=400, detail="Incorrect email or password")
 
         return auth.sign_jwt(user)
     
@@ -37,26 +42,35 @@ class RegisterRequest(BaseModel):
     name: str
     surname: str
     email: str
-    phone_number: str
-    address: str
-    date_of_birth: datetime
     confirm_password: str
 
 @app.post("/register", tags=["auth"])
 async def register(RegisterRequest: RegisterRequest):
     if RegisterRequest.password != RegisterRequest.confirm_password:
-        return {"error": "Passwords do not match"}
+        return HTTPException(status_code=400, detail="Passwords do not match")
     
+    """ check email format """
+    """ check password format """
+
     async with async_session() as conn:
+        """ CHECK EMAIL NOT PRESENT """
+        existing_user = await conn.execute(select(User).where(User.email == RegisterRequest.email))
+        existing_user = existing_user.scalars().first()
+        if existing_user:
+            return HTTPException(status_code=400, detail="Email already exists")
+        
+        hashed_password = pbkdf2_sha256.hash(RegisterRequest.password)
+        
         user = User(
             email=RegisterRequest.email,
             name=RegisterRequest.name,
             surname=RegisterRequest.surname,
-            phone_number=RegisterRequest.phone_number,
-            address=RegisterRequest.address,
-            date_of_birth=RegisterRequest.date_of_birth,
+            hashed_password=hashed_password,
         )
-        user.set_password(RegisterRequest.password)
+
         conn.add(user)
+
         await conn.commit()
+
         return auth.sign_jwt(user)
+    

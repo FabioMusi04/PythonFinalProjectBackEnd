@@ -66,6 +66,7 @@ class JWTBearer(HTTPBearer):
 
         try:
             payload = decode_jwt(jwtoken)
+            print(payload)
         except:
             payload = None
         if payload and payload["role"] == "admin":
