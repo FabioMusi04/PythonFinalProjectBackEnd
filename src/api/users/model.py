@@ -1,8 +1,7 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, Enum
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, Enum
+from src.services.SQLite.index import Base
 from datetime import datetime
-
-Base = declarative_base()  # SQLAlchemy Base class
+from sqlalchemy.orm import relationship
 
 class User(Base):  # Inherit from Base
     __tablename__ = 'users'
@@ -11,9 +10,8 @@ class User(Base):  # Inherit from Base
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    is_active = Column(Boolean, default=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(Enum("user", "admin"), nullable=False, default='user')
+    role = Column(Enum("user", "admin", "owner"), nullable=False, default='user')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -22,3 +20,6 @@ class User(Base):  # Inherit from Base
     address = Column(String, nullable=True)
     date_of_birth = Column(DateTime, nullable=True)
     profile_picture = Column(String, nullable=True)
+
+    # Relationships
+    restaurants = relationship("Restaurant", back_populates="owner", uselist=False)

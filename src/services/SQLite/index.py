@@ -1,7 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from src.api.users.model import Base
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
 
 sync_engine = create_engine("sqlite:///./test.db", echo=True)
 
@@ -11,10 +14,9 @@ async_session = sessionmaker(
     bind=async_engine, expire_on_commit=False, class_=AsyncSession
 )
 
-Base.metadata.create_all(bind=sync_engine)
+async def reset_database():
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
-done = False
-if done:
-    Base.metadata.drop_all(bind=sync_engine)
-    Base.metadata.create_all(bind=sync_engine)
-    print("All tables dropped and created")
+

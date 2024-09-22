@@ -1,26 +1,37 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, update, insert, delete
-from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from src.services.SQLite.index import async_session
 from src.api.users.model import User
 import src.services.auth.index as auth
+from sqlalchemy.orm import joinedload
 
 app = APIRouter()
 
 class UserUpdate(BaseModel):
-    name: str
-    email: str
+    name: str = None
+    surname: str = None
+    role: str = None
+    phone_number: str = None
+    address: str = None
+    date_of_birth: str = None
+    profile_picture: str = None
 
 class UserCreate(BaseModel):
-    name: str
+    name: str = None
+    surname: str = None
+    role: str = None
+    phone_number: str = None
+    address: str = None
+    date_of_birth: str = None
+    profile_picture: str = None
     email: str
     password: str
 
 @app.get("/users", tags=["users"])
 async def get_users(skip: int = 0, limit: int = 100, token: dict = Depends(auth.admin_required)):
     async with async_session() as conn:
-        stmt = select(User).offset(skip).limit(limit)
+        stmt = select(User).offset(skip).limit(limit).options(joinedload(User.restaurants))
         result = await conn.execute(stmt)
         users = result.scalars().all()
         return users
@@ -28,7 +39,7 @@ async def get_users(skip: int = 0, limit: int = 100, token: dict = Depends(auth.
 @app.get("/users/{user_id}", tags=["users"])
 async def get_user(user_id: int, token: dict = Depends(auth.admin_required)):
     async with async_session() as conn:
-        stmt = select(User).where(User.id == user_id)
+        stmt = select(User).where(User.id == user_id).options(joinedload(User.restaurants))
         result = await conn.execute(stmt)
         user = result.scalars().first()
         if user is None:

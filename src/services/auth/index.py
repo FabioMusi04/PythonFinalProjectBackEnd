@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 JWT_SECRET = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 4320
 
 def sign_jwt(user) -> Dict[str, str]:
     payload = {
@@ -57,4 +57,14 @@ class JWTBearer(HTTPBearer):
 def admin_required(token: dict = Depends(JWTBearer())):
     if token.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin privileges required.")
+    return token
+
+def owner_required(token: dict = Depends(JWTBearer())):
+    if token.get("role") != "owner":
+        raise HTTPException(status_code=403, detail="Owner privileges required.")
+    return token
+
+def owner_or_admin_required(token: dict = Depends(JWTBearer())):
+    if token.get("role") not in ["owner", "admin"]:
+        raise HTTPException(status_code=403, detail="Owner or Admin privileges required.")
     return token
