@@ -1,7 +1,7 @@
 import jwt
 import time
 from typing import Dict
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 JWT_SECRET = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -30,22 +30,15 @@ class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
-    async def __call__(self, request: Request, admin: bool = False):
+    async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
-        if credentials and not admin:
+        if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
             if not self.verify_jwt(credentials.credentials):
                 raise HTTPException(status_code=403, detail="Invalid token or expired token.")
-            return credentials.credentials
-        elif credentials and admin:
-            if not credentials.scheme == "Bearer":
-                raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
-            if not self.verify_jwt(credentials.credentials):
-                raise HTTPException(status_code=403, detail="Invalid token or expired token.")
-            if not self.verify_admin(credentials.credentials):
-                raise HTTPException(status_code=403, detail="Invalid admin token.")
-            return credentials.credentials
+            payload = decode_jwt(credentials.credentials)
+            return payload 
         else:
             raise HTTPException(status_code=403, detail="Invalid authorization code.")
 
@@ -61,15 +54,7 @@ class JWTBearer(HTTPBearer):
 
         return isTokenValid
     
-    def verify_admin(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
-
-        try:
-            payload = decode_jwt(jwtoken)
-            print(payload)
-        except:
-            payload = None
-        if payload and payload["role"] == "admin":
-            isTokenValid = True
-
-        return isTokenValid
+def admin_required(token: dict = Depends(JWTBearer())):
+    if token.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required.")
+    return token
