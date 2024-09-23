@@ -2,6 +2,8 @@ from fastapi import FastAPI
 import src.services.SQLite.index as db
 import src.api.users.index as users
 import src.api.restaurants.index as restaurants
+import src.api.orders.index as orders
+import src.api.products.index as products
 import src.api.auth.index as auth
 
 """ fastapi dev main.py """
@@ -10,6 +12,8 @@ app = FastAPI()
 
 app.include_router(users.app)
 app.include_router(restaurants.app)
+app.include_router(products.app)
+app.include_router(orders.app)
 app.include_router(auth.app)
 
 from src.services.seeder.index import seed_data

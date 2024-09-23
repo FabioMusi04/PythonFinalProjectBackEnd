@@ -26,3 +26,4 @@ class Restaurant(Base):
     
     # Relationships
     owner = relationship("User", back_populates="restaurants")
+    products = relationship("Product", back_populates="restaurant")

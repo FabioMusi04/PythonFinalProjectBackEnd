@@ -2,4 +2,4 @@ SQLAlchemy==2.0.35
 fastapi[standard]==0.115.0
 pyjwt==2.9.0
 aiosqlite==0.20.0
-passlib==1.8.0
+passlib==1.7.4
