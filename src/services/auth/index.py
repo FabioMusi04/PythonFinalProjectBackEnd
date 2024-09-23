@@ -4,24 +4,24 @@ from typing import Dict
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-JWT_SECRET = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 4320
+import os
+from dotenv import load_dotenv 
+load_dotenv() 
 
 def sign_jwt(user) -> Dict[str, str]:
     payload = {
         "id": user.id,
         "email": user.email,
         "role": user.role,
-        "expires": time.time() + ACCESS_TOKEN_EXPIRE_MINUTES
+        "expires": time.time() + (os.getenv("JWT_EXPIRATION_TIME") or 3600)
     }
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(payload, (os.getenv("JWT_SECRET") or "secret"), algorithm=(os.getenv("JWT_ALGORITHM") or "HS256"))
 
     return {"access_token": token}
 
 def decode_jwt(token: str) -> dict:
     try:
-        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        decoded_token = jwt.decode(token, (os.getenv("JWT_SECRET") or "secret"), algorithm=(os.getenv("JWT_ALGORITHM") or "HS256"))
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except:
         return {}
