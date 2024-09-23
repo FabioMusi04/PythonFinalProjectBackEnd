@@ -3,9 +3,13 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from src.api.users.model import Base
 
-sync_engine = create_engine("sqlite:///./test.db", echo=True)
+import os
+from dotenv import load_dotenv 
+load_dotenv() 
 
-async_engine = create_async_engine("sqlite+aiosqlite:///./test.db", echo=True)
+sync_engine = create_engine((os.getenv("ENGINE_PATH_DB")), echo=True)
+
+async_engine = create_async_engine((os.getenv("ASYNC_ENGINE_PATH_DB")), echo=True)
 
 async_session = sessionmaker(
     bind=async_engine, expire_on_commit=False, class_=AsyncSession
