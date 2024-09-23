@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import src.services.SQLite.index as db
 import src.api.users.index as users
 import src.api.restaurants.index as restaurants
@@ -8,7 +9,19 @@ import src.api.auth.index as auth
 
 """ fastapi dev main.py """
 
+origins = [
+    "http://localhost:5173",
+]
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(users.app)
 app.include_router(restaurants.app)

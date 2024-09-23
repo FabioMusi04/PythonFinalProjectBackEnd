@@ -1,5 +1,5 @@
 import jwt
-import time
+from datetime import datetime, timedelta
 from typing import Dict
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -9,20 +9,25 @@ JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 4320
 
 def sign_jwt(user) -> Dict[str, str]:
+    expires_at = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
     payload = {
         "id": user.id,
         "email": user.email,
         "role": user.role,
-        "expires": time.time() + ACCESS_TOKEN_EXPIRE_MINUTES
+        "expires": expires_at.timestamp()
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    return {"access_token": token}
+    userToSend = user
+    userToSend.hashed_password = None
+
+    return {"token": { "access_token": token, "expires_in": int(expires_at.timestamp()) }, "token_type": "bearer", "user": userToSend}
 
 def decode_jwt(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return decoded_token if decoded_token["expires"] >= time.time() else None
+        return decoded_token if decoded_token["expires"] >= datetime.now().timestamp() else None
     except:
         return {}
 
