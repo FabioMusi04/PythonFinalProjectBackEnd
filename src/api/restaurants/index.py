@@ -38,6 +38,14 @@ async def get_restaurants(skip: int = 0, limit: int = 100):
         result = await conn.execute(stmt)
         restaurants = result.scalars().all()
         return restaurants
+    
+@app.get("/restaurants/me", tags=["restaurants"])
+async def get_my_restaurants(token: dict = Depends(auth.owner_required)):
+    async with async_session() as conn:
+        stmt = select(Restaurant).where(Restaurant.owner_id == token["id"]).options(joinedload(Restaurant.owner))
+        result = await conn.execute(stmt)
+        restaurants = result.scalars().all()
+        return restaurants
 
 @app.get("/restaurants/{restaurant_id}", tags=["restaurants"])
 async def get_restaurant(restaurant_id: int):
@@ -52,7 +60,7 @@ async def get_restaurant(restaurant_id: int):
 @app.post("/restaurants", tags=["restaurants"])
 async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_required)):
     async with async_session() as conn:
-        stmt = insert(Restaurant).values(**restaurant_create.dict(), owner_id=token["id"])
+        stmt = insert(Restaurant).values(**restaurant_create.model_dump(), owner_id=token["id"])
         result = await conn.execute(stmt)
         await conn.commit()
         return {"id": result.inserted_primary_key}
