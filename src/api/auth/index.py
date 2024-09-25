@@ -53,13 +53,14 @@ async def register(RegisterRequest: RegisterRequest):
     """ check password format """
 
     async with async_session() as conn:
-        """ CHECK EMAIL NOT PRESENT """
         existing_user = await conn.execute(select(User).where(User.email == RegisterRequest.email))
         existing_user = existing_user.scalars().first()
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already exists")
         
         hashed_password = pbkdf2_sha256.hash(RegisterRequest.password)
+
+        print(RegisterRequest)
         
         user = User(
             email=RegisterRequest.email,
@@ -67,6 +68,7 @@ async def register(RegisterRequest: RegisterRequest):
             surname=RegisterRequest.surname,
             hashed_password=hashed_password,
         )
+        print(user)
 
         conn.add(user)
 
