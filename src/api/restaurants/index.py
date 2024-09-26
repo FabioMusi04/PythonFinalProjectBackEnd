@@ -71,7 +71,6 @@ async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpd
         stmt = select(Restaurant).where(Restaurant.id == restaurant_id, Restaurant.owner_id == token["id"])
         result = await conn.execute(stmt)
         restaurant = result.scalars().first()
-        print(RestaurantUpdate)
         if restaurant is None:
             raise HTTPException(status_code=404, detail="Restaurant not found or unauthorized")
 
