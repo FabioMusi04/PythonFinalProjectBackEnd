@@ -9,8 +9,12 @@ import src.api.auth.index as auth
 
 """ fastapi dev main.py """
 
+
+import os
+from dotenv import load_dotenv 
+load_dotenv() 
 origins = [
-    "http://localhost:5173",
+    os.getenv("FRONTEND_URL"),
 ]
 
 app = FastAPI()
