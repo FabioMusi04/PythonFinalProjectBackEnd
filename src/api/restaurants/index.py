@@ -5,6 +5,7 @@ from src.services.SQLite.index import async_session
 from src.api.restaurants.model import Restaurant
 import src.services.auth.index as auth
 from sqlalchemy.orm import joinedload
+from typing import Optional
 
 app = APIRouter()
 
@@ -13,28 +14,35 @@ class RestaurantCreate(BaseModel):
     address: str
     city: str
     country: str
-    postal_code: str = None
-    phone_number: str = None
-    email: str = None
-    website: str = None
-    description: str = None
+    postal_code: Optional[str] = None
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
 
 class RestaurantUpdate(BaseModel):
-    name: str = None
-    address: str = None
-    city: str = None
-    country: str = None
-    postal_code: str = None
-    phone_number: str = None
-    email: str = None
-    website: str = None
-    description: str = None
-    status: str = None  # Could be 'open', 'closed', or 'under_review'
+    name: str
+    address: str
+    city: str
+    country: str
+    postal_code: Optional[str] = None
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
 
 @app.get("/restaurants", tags=["restaurants"])
 async def get_restaurants(skip: int = 0, limit: int = 100):
     async with async_session() as conn:
         stmt = select(Restaurant).offset(skip).limit(limit).options(joinedload(Restaurant.owner))
+        result = await conn.execute(stmt)
+        restaurants = result.scalars().all()
+        return restaurants
+    
+@app.get("/restaurants/me", tags=["restaurants"])
+async def get_my_restaurants(token: dict = Depends(auth.owner_required)):
+    async with async_session() as conn:
+        stmt = select(Restaurant).where(Restaurant.owner_id == token["id"]).options(joinedload(Restaurant.owner))
         result = await conn.execute(stmt)
         restaurants = result.scalars().all()
         return restaurants
@@ -52,7 +60,7 @@ async def get_restaurant(restaurant_id: int):
 @app.post("/restaurants", tags=["restaurants"])
 async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_required)):
     async with async_session() as conn:
-        stmt = insert(Restaurant).values(**restaurant_create.dict(), owner_id=token["id"])
+        stmt = insert(Restaurant).values(**restaurant_create.model_dump(), owner_id=token["id"])
         result = await conn.execute(stmt)
         await conn.commit()
         return {"id": result.inserted_primary_key}
@@ -60,19 +68,20 @@ async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = D
 @app.put("/restaurants/{restaurant_id}", tags=["restaurants"])
 async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpdate, token: dict = Depends(auth.owner_required)):
     async with async_session() as conn:
-        # Check if the restaurant belongs to the logged-in owner
         stmt = select(Restaurant).where(Restaurant.id == restaurant_id, Restaurant.owner_id == token["id"])
         result = await conn.execute(stmt)
         restaurant = result.scalars().first()
-
+        print(RestaurantUpdate)
         if restaurant is None:
             raise HTTPException(status_code=404, detail="Restaurant not found or unauthorized")
 
-        # Update restaurant fields
         stmt = update(Restaurant).where(Restaurant.id == restaurant_id).values(**restaurant_update.dict(exclude_unset=True))
         await conn.execute(stmt)
+        stmt = select(Restaurant).where(Restaurant.id == restaurant_id)
+        result = await conn.execute(stmt)
+        restaurant = result.scalars().first()
         await conn.commit()
-        return {"message": "Restaurant updated successfully"}
+        return restaurant
 
 @app.delete("/restaurants/{restaurant_id}", tags=["restaurants"])
 async def delete_restaurant(restaurant_id: int, token: dict = Depends(auth.owner_or_admin_required)):

@@ -1,5 +1,5 @@
 import jwt
-import time
+from datetime import datetime, timedelta
 from typing import Dict
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -9,20 +9,25 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 def sign_jwt(user) -> Dict[str, str]:
+    expires_at = datetime.now() + timedelta(minutes=(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES") or "4328"))
+
     payload = {
         "id": user.id,
         "email": user.email,
         "role": user.role,
-        "expires": time.time() + (os.getenv("JWT_EXPIRATION_TIME") or 3600)
+        "expires": expires_at.timestamp()
     }
     token = jwt.encode(payload, (os.getenv("JWT_SECRET") or "secret"), algorithm=(os.getenv("JWT_ALGORITHM") or "HS256"))
 
-    return {"access_token": token}
+    userToSend = user
+    userToSend.hashed_password = None
+
+    return {"token": { "access_token": token, "expires_in": int(expires_at.timestamp()) }, "token_type": "bearer", "user": userToSend}
 
 def decode_jwt(token: str) -> dict:
     try:
-        decoded_token = jwt.decode(token, (os.getenv("JWT_SECRET") or "secret"), algorithm=(os.getenv("JWT_ALGORITHM") or "HS256"))
-        return decoded_token if decoded_token["expires"] >= time.time() else None
+        decoded_token = jwt.decode(token, (os.getenv("JWT_SECRET") or "secret"), algorithms=[(os.getenv("JWT_ALGORITHM") or "HS256")])
+        return decoded_token if decoded_token["expires"] >= datetime.now().timestamp() else None
     except:
         return {}
 
@@ -44,7 +49,6 @@ class JWTBearer(HTTPBearer):
 
     def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
-
         try:
             payload = decode_jwt(jwtoken)
         except:

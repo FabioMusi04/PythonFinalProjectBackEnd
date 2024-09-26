@@ -23,10 +23,10 @@ async def login(login_request: LoginRequest):
         user = result.scalars().first()
 
         if user is None:
-            return HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="User not found")
 
         if not pbkdf2_sha256.verify(login_request.password, user.hashed_password):
-            return HTTPException(status_code=400, detail="Incorrect email or password")
+            raise HTTPException(status_code=400, detail="Incorrect email or password")
 
         return auth.sign_jwt(user)
     
@@ -47,19 +47,20 @@ class RegisterRequest(BaseModel):
 @app.post("/register", tags=["auth"])
 async def register(RegisterRequest: RegisterRequest):
     if RegisterRequest.password != RegisterRequest.confirm_password:
-        return HTTPException(status_code=400, detail="Passwords do not match")
+        raise HTTPException(status_code=400, detail="Passwords do not match")
     
     """ check email format """
     """ check password format """
 
     async with async_session() as conn:
-        """ CHECK EMAIL NOT PRESENT """
         existing_user = await conn.execute(select(User).where(User.email == RegisterRequest.email))
         existing_user = existing_user.scalars().first()
         if existing_user:
-            return HTTPException(status_code=400, detail="Email already exists")
+            raise HTTPException(status_code=400, detail="Email already exists")
         
         hashed_password = pbkdf2_sha256.hash(RegisterRequest.password)
+
+        print(RegisterRequest)
         
         user = User(
             email=RegisterRequest.email,
@@ -67,6 +68,7 @@ async def register(RegisterRequest: RegisterRequest):
             surname=RegisterRequest.surname,
             hashed_password=hashed_password,
         )
+        print(user)
 
         conn.add(user)
 
