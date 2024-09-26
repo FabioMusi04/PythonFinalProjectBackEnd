@@ -23,3 +23,4 @@ class User(Base):  # Inherit from Base
 
     # Relationships
     restaurants = relationship("Restaurant", back_populates="owner", uselist=False)
+    orders = relationship("Order", back_populates="customer")

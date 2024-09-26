@@ -55,7 +55,7 @@ async def update_user_me(user_update: UserUpdate, token: dict = Depends(auth.JWT
         user = result.scalars().first()
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        stmt = update(User).where(User.id == token["id"]).values(**user_update.dict())
+        stmt = update(User).where(User.id == token["id"]).values(**user_update.model_dump())
         await conn.execute(stmt)
         await conn.commit()
         return {"message": "User updated successfully"}
@@ -68,7 +68,7 @@ async def update_user(user_id: int, user_update: UserUpdate, token: dict = Depen
         user = result.scalars().first()
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        stmt = update(User).where(User.id == user_id).values(**user_update.dict())
+        stmt = update(User).where(User.id == user_id).values(**user_update.model_dump())
         await conn.execute(stmt)
         await conn.commit()
         return {"message": "User updated successfully"}
@@ -76,7 +76,7 @@ async def update_user(user_id: int, user_update: UserUpdate, token: dict = Depen
 @app.post("/users", tags=["users"])
 async def create_user(user_create: UserCreate, token: dict = Depends(auth.admin_required)):
     async with async_session() as conn:
-        stmt = insert(User).values(**user_create.dict())
+        stmt = insert(User).values(**user_create.model_dump())
         result = await conn.execute(stmt)
         await conn.commit()
         return {"id": result.inserted_primary_key}
