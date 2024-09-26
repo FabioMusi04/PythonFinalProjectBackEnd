@@ -48,7 +48,6 @@ async def get_user(user_id: int, token: dict = Depends(auth.admin_required)):
     
 @app.put("/users/me", tags=["users"])
 async def update_user_me(user_update: UserUpdate, token: dict = Depends(auth.JWTBearer())):
-    print("token", token)
     async with async_session() as conn:
         stmt = select(User).where(User.id == token["id"])
         result = await conn.execute(stmt)
@@ -57,8 +56,9 @@ async def update_user_me(user_update: UserUpdate, token: dict = Depends(auth.JWT
             raise HTTPException(status_code=404, detail="User not found")
         stmt = update(User).where(User.id == token["id"]).values(**user_update.model_dump())
         await conn.execute(stmt)
+        updated_user = await conn.execute(select(User).where(User.id == token["id"]))
         await conn.commit()
-        return {"message": "User updated successfully"}
+        return updated_user.scalars().first()
 
 @app.put("/users/{user_id}", tags=["users"])
 async def update_user(user_id: int, user_update: UserUpdate, token: dict = Depends(auth.admin_required)):
