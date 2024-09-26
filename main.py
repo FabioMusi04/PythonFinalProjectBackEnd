@@ -43,3 +43,5 @@ async def startup_event():
     await seed_data()
 
 app.add_event_handler("startup", startup_event)
+
+
