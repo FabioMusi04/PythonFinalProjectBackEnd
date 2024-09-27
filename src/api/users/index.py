@@ -5,26 +5,29 @@ from src.services.SQLite.index import async_session
 from src.api.users.model import User
 import src.services.auth.index as auth
 from sqlalchemy.orm import joinedload
+from typing import Optional
+from datetime import datetime
 
 app = APIRouter()
 
 class UserUpdate(BaseModel):
-    name: str = None
-    surname: str = None
-    role: str = None
-    phone_number: str = None
-    address: str = None
-    date_of_birth: str = None
-    profile_picture: str = None
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    role: Optional[str] = None
+    phone_number: Optional[int] = None
+    address: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
+    profile_picture: Optional[str] = None
+    email: Optional[str] = None
 
 class UserCreate(BaseModel):
-    name: str = None
-    surname: str = None
-    role: str = None
-    phone_number: str = None
-    address: str = None
-    date_of_birth: str = None
-    profile_picture: str = None
+    name: str
+    surname: str
+    role: str
+    phone_number: Optional[int] = None
+    address: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
+    profile_picture: Optional[str] = None
     email: str
     password: str
 
@@ -52,13 +55,24 @@ async def update_user_me(user_update: UserUpdate, token: dict = Depends(auth.JWT
         stmt = select(User).where(User.id == token["id"])
         result = await conn.execute(stmt)
         user = result.scalars().first()
+
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        stmt = update(User).where(User.id == token["id"]).values(**user_update.model_dump())
+
+        update_data = user_update.model_dump(exclude_unset=True)
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+
+        stmt = update(User).where(User.id == token["id"]).values(**update_data)
         await conn.execute(stmt)
-        updated_user = await conn.execute(select(User).where(User.id == token["id"]))
+
+        user = await conn.execute(select(User).where(User.id == token["id"]))
+
         await conn.commit()
-        return updated_user.scalars().first()
+
+        return user.scalars().first()
+
 
 @app.put("/users/{user_id}", tags=["users"])
 async def update_user(user_id: int, user_update: UserUpdate, token: dict = Depends(auth.admin_required)):
