@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 def sign_jwt(user) -> Dict[str, str]:
-    expires_at = datetime.now() + timedelta(minutes=(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES") or 4328))
+    expires_at = datetime.now() + timedelta(minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 4328)))
 
     payload = {
         "id": user.id,
