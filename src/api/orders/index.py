@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, update, delete, and_
 from pydantic import BaseModel
 from src.services.SQLite.index import async_session
 from src.api.orders.model import Order
@@ -14,11 +14,12 @@ class OrderCreate(BaseModel):
     customer_id: int
     products: list[int]
     quantity: list[int]
+    restaurant_id: int
 
 @app.post("/orders", tags=["orders"])
 async def create_order(order: OrderCreate, token: dict = Depends(auth.JWTBearer())):
     async with async_session() as session:
-        new_order = Order(customer_id=order.customer_id)
+        new_order = Order(customer_id=order.customer_id , restaurant_id=order.restaurant_id)
 
         for product_id, quantity in zip(order.products, order.quantities):
             stmt = select(Product).where(Product.id == product_id)
@@ -45,7 +46,7 @@ async def get_orders(skip: int = 0, limit: int = 100, token: dict = Depends(auth
 @app.get("/orders/{restaurant_id}", tags=["orders"])
 async def get_orders_of_restaurant(restaurant_id: int, token: dict = Depends(auth.owner_or_admin_required)):
     async with async_session() as conn:
-        stmt_restaurant = select(Restaurant).where(Restaurant.owner_id == token["id"] and Restaurant.id == restaurant_id)
+        stmt_restaurant = select(Restaurant).where(_and(Restaurant.owner_id == token["id"], Restaurant.id == restaurant_id))
         result_restaurant = await conn.execute(stmt_restaurant)
         restaurant = result_restaurant.scalar_one_or_none()
         if not restaurant:
@@ -140,7 +141,10 @@ async def delete_order(order_id: int, token: dict = Depends(auth.owner_or_admin_
 @app.get("/orders/me/{restaurant_id}", tags=["orders"])
 async def get_my_orders(restaurant_id: int, token: dict = Depends(auth.JWTBearer())):
     async with async_session() as conn:
-        stmt = select(Order).where(Product.restaurant_id == restaurant_id and Order.customer_id == token["id"]).options(joinedload(Order.products))
+        print(token["id"])
+        stmt = select(Order).where(
+            and_(Order.restaurant_id == restaurant_id, Order.customer_id == token["id"])
+        ).options(joinedload(Order.products))        
         result = await conn.execute(stmt)
         orders = result.unique().scalars().all()
         return orders

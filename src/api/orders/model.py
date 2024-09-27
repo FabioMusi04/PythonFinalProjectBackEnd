@@ -13,7 +13,9 @@ class Order(Base):
     total_price = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'), nullable=False)
 
     # Relationships
     customer = relationship("User", back_populates="orders", uselist=False)
     products = relationship("Product", secondary=order_items, back_populates="orders")
+    restaurant = relationship("Restaurant", back_populates="orders")
