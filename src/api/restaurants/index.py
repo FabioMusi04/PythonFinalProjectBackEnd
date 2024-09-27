@@ -58,7 +58,7 @@ async def get_restaurant(restaurant_id: int):
         return restaurant
 
 @app.post("/restaurants", tags=["restaurants"])
-async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_required)):
+async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_or_admin_required)):
     async with async_session() as conn:
         stmt = insert(Restaurant).values(**restaurant_create.model_dump(), owner_id=token["id"])
         result = await conn.execute(stmt)
@@ -66,7 +66,7 @@ async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = D
         return {"id": result.inserted_primary_key}
 
 @app.put("/restaurants/{restaurant_id}", tags=["restaurants"])
-async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpdate, token: dict = Depends(auth.owner_required)):
+async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpdate, token: dict = Depends(auth.owner_or_admin_required)):
     async with async_session() as conn:
         stmt = select(Restaurant).where(Restaurant.id == restaurant_id, Restaurant.owner_id == token["id"])
         result = await conn.execute(stmt)
