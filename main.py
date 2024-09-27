@@ -13,8 +13,9 @@ import src.api.auth.index as auth
 import os
 from dotenv import load_dotenv 
 load_dotenv() 
+print(os.getenv("FRONTEND_URL2"))
 origins = [
-    os.getenv("FRONTEND_URL") or "https://python-final-project-front-end.vercel.app",
+    os.getenv("FRONTEND_URL2") or "https://python-final-project-front-end.vercel.app",
 ]
 
 app = FastAPI()

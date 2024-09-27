@@ -63,7 +63,10 @@ async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = D
         stmt = insert(Restaurant).values(**restaurant_create.model_dump(), owner_id=token["id"])
         result = await conn.execute(stmt)
         await conn.commit()
-        return {"id": result.inserted_primary_key}
+        stmt = select(Restaurant).where(Restaurant.id == result.lastrowid).options(joinedload(Restaurant.owner))
+        result = await conn.execute(stmt)
+        restaurant = result.scalars().first()
+        return restaurant
 
 @app.put("/restaurants/{restaurant_id}", tags=["restaurants"])
 async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpdate, token: dict = Depends(auth.owner_or_admin_required)):
