@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 origins = [
-    os.getenv("FRONTEND_URL") or "https://python-final-project-front-end.vercel.app",
+    os.getenv("FRONTEND_URL", "https://python-final-project-front-end.vercel.app"),
 ]
 
 app = FastAPI()

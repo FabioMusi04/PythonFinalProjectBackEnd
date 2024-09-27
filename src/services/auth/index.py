@@ -17,7 +17,7 @@ def sign_jwt(user) -> Dict[str, str]:
         "role": user.role,
         "expires": expires_at.timestamp()
     }
-    token = jwt.encode(payload, (os.getenv("JWT_SECRET") or "secret"), algorithm=(os.getenv("JWT_ALGORITHM") or "HS256"))
+    token = jwt.encode(payload, os.getenv("JWT_SECRET", "secret"), algorithm=os.getenv("JWT_ALGORITHM", "HS256"))
 
     userToSend = user
     userToSend.hashed_password = None
@@ -26,7 +26,7 @@ def sign_jwt(user) -> Dict[str, str]:
 
 def decode_jwt(token: str) -> dict:
     try:
-        decoded_token = jwt.decode(token, (os.getenv("JWT_SECRET") or "secret"), algorithms=[(os.getenv("JWT_ALGORITHM") or "HS256")])
+        decoded_token = jwt.decode(token, os.getenv("JWT_SECRET", "secret"), algorithms=[(os.getenv("JWT_ALGORITHM", "HS256"))])
         return decoded_token if decoded_token["expires"] >= datetime.now().timestamp() else None
     except:
         return {}
