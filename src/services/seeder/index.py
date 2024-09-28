@@ -82,6 +82,7 @@ async def seed_data():
                 country="Country",
                 postal_code="12345",
                 owner_id=owner.id,  # Assuming the owner is the normal user for simplicity
+                email=owner_email,
             )
             session.add(restaurant)
             print("Restaurant created")

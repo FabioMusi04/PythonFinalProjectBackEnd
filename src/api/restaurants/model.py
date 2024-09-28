@@ -17,7 +17,7 @@ class Restaurant(Base):
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Link to the User (Owner)
     
     phone_number = Column(String, nullable=True)
-    email = Column(String, nullable=True, unique=True, index=True)
+    email = Column(String, nullable=False, unique=True, index=True)
     website = Column(String, nullable=True)
     description = Column(String, nullable=True)
 

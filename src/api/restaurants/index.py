@@ -19,6 +19,7 @@ class RestaurantCreate(BaseModel):
     email: Optional[str] = None
     website: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[str] = None
 
 class RestaurantUpdate(BaseModel):
     name: str
@@ -30,6 +31,7 @@ class RestaurantUpdate(BaseModel):
     email: Optional[str] = None
     website: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[str] = None
 
 @app.get("/restaurants", tags=["restaurants"])
 async def get_restaurants(skip: int = 0, limit: int = 100):
@@ -60,12 +62,24 @@ async def get_restaurant(restaurant_id: int):
 @app.post("/restaurants", tags=["restaurants"])
 async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_or_admin_required)):
     async with async_session() as conn:
+        stmt = select(Restaurant).where(
+            (Restaurant.email == restaurant_create.email) | 
+            (Restaurant.name == restaurant_create.name)
+        )
+        result = await conn.execute(stmt)
+        existing_restaurant = result.scalars().first()
+        
+        if existing_restaurant:
+            raise HTTPException(status_code=400, detail="Restaurant with this email or name already exists")
+
         stmt = insert(Restaurant).values(**restaurant_create.model_dump(), owner_id=token["id"])
         result = await conn.execute(stmt)
         await conn.commit()
+        
         stmt = select(Restaurant).where(Restaurant.id == result.lastrowid).options(joinedload(Restaurant.owner))
         result = await conn.execute(stmt)
         restaurant = result.scalars().first()
+        
         return restaurant
 
 @app.put("/restaurants/{restaurant_id}", tags=["restaurants"])
@@ -76,8 +90,10 @@ async def update_restaurant(restaurant_id: int, restaurant_update: RestaurantUpd
         restaurant = result.scalars().first()
         if restaurant is None:
             raise HTTPException(status_code=404, detail="Restaurant not found or unauthorized")
+        
+        print(restaurant_update)
 
-        stmt = update(Restaurant).where(Restaurant.id == restaurant_id).values(**restaurant_update.dict(exclude_unset=True))
+        stmt = update(Restaurant).where(Restaurant.id == restaurant_id).values(**restaurant_update.model_dump(exclude_unset=True))
         await conn.execute(stmt)
         stmt = select(Restaurant).where(Restaurant.id == restaurant_id)
         result = await conn.execute(stmt)
