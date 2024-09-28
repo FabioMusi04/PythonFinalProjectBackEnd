@@ -31,7 +31,7 @@ class RestaurantUpdate(BaseModel):
     email: Optional[str] = None
     website: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[str] = "under_review"
 
 @app.get("/restaurants", tags=["restaurants"])
 async def get_restaurants(skip: int = 0, limit: int = 100):
@@ -62,6 +62,9 @@ async def get_restaurant(restaurant_id: int):
 @app.post("/restaurants", tags=["restaurants"])
 async def create_restaurant(restaurant_create: RestaurantCreate, token: dict = Depends(auth.owner_or_admin_required)):
     async with async_session() as conn:
+        if restaurant_create.status and restaurant_create.status not in ["open", "closed", "under_review"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
         stmt = select(Restaurant).where(
             (Restaurant.email == restaurant_create.email) | 
             (Restaurant.name == restaurant_create.name)
