@@ -17,6 +17,8 @@ class ProductCreate(BaseModel):
     status: Optional[str] = "available"
     discount: Optional[int] = None
     restaurant_id: int
+    image: Optional[str] = None
+    visible: Optional[bool] = True
 
 
 @app.post("/products", tags=["products"])
