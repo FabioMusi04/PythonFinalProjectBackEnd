@@ -22,5 +22,5 @@ class User(Base):  # Inherit from Base
     profile_picture = Column(String, nullable=True)
 
     # Relationships
-    restaurants = relationship("Restaurant", back_populates="owner", uselist=False)
+    restaurants = relationship("Restaurant", back_populates="owner")
     orders = relationship("Order", back_populates="customer")
