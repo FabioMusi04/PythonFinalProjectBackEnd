@@ -20,6 +20,7 @@ class RestaurantCreate(BaseModel):
     website: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
+    image: Optional[str] = None
 
 class RestaurantUpdate(BaseModel):
     name: str
@@ -32,6 +33,7 @@ class RestaurantUpdate(BaseModel):
     website: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = "under_review"
+    image: Optional[str] = None
 
 @app.get("/restaurants", tags=["restaurants"])
 async def get_restaurants(skip: int = 0, limit: int = 100):

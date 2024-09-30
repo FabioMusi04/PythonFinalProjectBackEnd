@@ -20,6 +20,7 @@ class Restaurant(Base):
     email = Column(String, nullable=False, unique=True, index=True)
     website = Column(String, nullable=True)
     description = Column(String, nullable=True)
+    image = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
