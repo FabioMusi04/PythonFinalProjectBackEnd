@@ -6,6 +6,9 @@ import src.api.restaurants.index as restaurants
 import src.api.orders.index as orders
 import src.api.products.index as products
 import src.api.auth.index as auth
+import src.api.qrcodes.index as qrcodes
+
+import src.services.QRCode.index as qr_code
 
 """ fastapi dev main.py """
 
@@ -33,6 +36,7 @@ app.include_router(restaurants.app)
 app.include_router(products.app)
 app.include_router(orders.app)
 app.include_router(auth.app)
+app.include_router(qrcodes.app)
 
 from src.services.seeder.index import seed_data
 
