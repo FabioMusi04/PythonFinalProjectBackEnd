@@ -14,6 +14,7 @@ class Product(Base):
     discount = Column(Integer, nullable=True)
     image = Column(String, nullable=True)
     visible = Column(Boolean, nullable=False, default=True)
+    #category_id = Column(Integer, ForeignKey('categories.id'), nullable=True)  # Link to the Category
     
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'), nullable=False)  # Link to the Restaurant
     
