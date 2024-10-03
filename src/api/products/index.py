@@ -27,7 +27,7 @@ async def create_product(product: ProductCreate, token: dict = Depends(auth.owne
         new_product = Product(**product.model_dump())
         session.add(new_product)
         await session.commit()
-        return {"product": new_product, "message": "Product created successfully"}
+        return new_product
 
 @app.get("/products", tags=["products"])
 async def get_products(skip: int = 0, limit: int = 100, token: dict = Depends(auth.admin_required)):
