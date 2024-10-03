@@ -7,8 +7,7 @@ import src.api.orders.index as orders
 import src.api.products.index as products
 import src.api.auth.index as auth
 import src.api.qrcodes.index as qrcodes
-
-import src.services.QRCode.index as qr_code
+import src.api.categories.index as categories
 
 """ fastapi dev main.py """
 
@@ -32,6 +31,7 @@ app.add_middleware(
 )
 
 app.include_router(users.app)
+app.include_router(categories.app)
 app.include_router(restaurants.app)
 app.include_router(products.app)
 app.include_router(orders.app)

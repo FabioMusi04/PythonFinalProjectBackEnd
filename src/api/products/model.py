@@ -17,6 +17,7 @@ class Product(Base):
     #category_id = Column(Integer, ForeignKey('categories.id'), nullable=True)  # Link to the Category
     
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'), nullable=False)  # Link to the Restaurant
+    category_id = Column(Integer, ForeignKey('categories.id'), nullable=True)  # Link to the Category
     
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -24,3 +25,4 @@ class Product(Base):
     # Relationships
     restaurant = relationship("Restaurant", back_populates="products", uselist=False)
     orders = relationship("Order", secondary="order_items", back_populates="products")
+    category = relationship("Category", back_populates="products", uselist=False)

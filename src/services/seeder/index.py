@@ -5,9 +5,11 @@ from src.api.users.model import User
 from src.api.products.model import Product
 from src.api.orders.model import Order
 from src.api.orderItems.model import order_items
+from src.api.categories.model import Category
 from src.api.restaurants.model import Restaurant
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
+import random
 
 
 # Setup async engine and session
@@ -90,6 +92,35 @@ async def seed_data():
         # Commit the session
         await session.commit()
 
+        categories = [
+            {"name": "Pizza", "description": "Delicious pizza"},
+            {"name": "Burger", "description": "Juicy burger"},
+            {"name": "Salad", "description": "Fresh salad"},
+            {"name": "Pasta", "description": "Delicious pasta"},
+            {"name": "Sushi", "description": "Fresh sushi rolls"},
+            {"name": "Steak", "description": "Juicy grilled steak"},
+            {"name": "Tacos", "description": "Spicy beef tacos"},
+            {"name": "Sandwich", "description": "Ham and cheese sandwich"},
+            {"name": "Soup", "description": "Hot chicken soup"},
+            {"name": "Fries", "description": "Crispy french fries"},
+            {"name": "Ice Cream", "description": "Vanilla ice cream"},
+            {"name": "Cake", "description": "Chocolate cake"},
+            {"name": "Salmon", "description": "Grilled salmon"},
+            {"name": "Chicken Wings", "description": "Spicy chicken wings"},
+        ]
+
+        for category_data in categories:
+            stmt = select(Category).where(Category.name == category_data["name"])
+            result = await session.execute(stmt)
+            category = result.scalar_one_or_none()
+
+            if not category:
+                category = Category(**category_data, restaurant_id=restaurant.id)
+                session.add(category)
+                print("Categories created")
+        
+        await session.commit()
+
         products = [
             {"id": 1, "name": "Pizza", "price": 1099, "restaurant_id": restaurant.id},
             {"id": 2, "name": "Burger", "price": 599, "restaurant_id": restaurant.id},
@@ -142,7 +173,8 @@ async def seed_data():
             product = result.scalar_one_or_none()
 
             if not product:
-                product = Product(**product_data)
+                category_id = random.randint(1, categories.__len__())
+                product = Product(**product_data, category_id=category_id)
                 session.add(product)
                 print("Products created")
 

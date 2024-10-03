@@ -32,7 +32,7 @@ async def create_product(product: ProductCreate, token: dict = Depends(auth.owne
 @app.get("/products", tags=["products"])
 async def get_products(skip: int = 0, limit: int = 100, token: dict = Depends(auth.admin_required)):
     async with async_session() as conn:
-        total_stmt = select(func.count(Product.id))
+        total_stmt = select(func.count(Product.id)).options(joinedload(Product.category))
         total_result = await conn.execute(total_stmt)
         total_count = total_result.scalar()
 
@@ -55,7 +55,7 @@ async def get_product_by_restaurant(restaurant_id: int, token: dict = Depends(au
         total_count = total_result.scalar()
 
         # Query to get paginated products for the restaurant
-        stmt = select(Product).where(Product.restaurant_id == restaurant_id).offset(skip).limit(limit)
+        stmt = select(Product).where(Product.restaurant_id == restaurant_id).offset(skip).limit(limit).options(joinedload(Product.category))
         result = await conn.execute(stmt)
         products = result.scalars().all()
 
@@ -70,7 +70,7 @@ async def get_product_by_restaurant(restaurant_id: int, token: dict = Depends(au
 @app.get("/products/{product_id}", tags=["products"])
 async def get_product(product_id: int, token: dict = Depends(auth.JWTBearer())):
     async with async_session() as conn:
-        stmt = select(Product).where(Product.id == product_id)
+        stmt = select(Product).where(Product.id == product_id).options(joinedload(Product.category))
         result = await conn.execute(stmt)
         product = result.scalars().first()
         if product is None:
