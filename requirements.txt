@@ -1,0 +1,8 @@
+SQLAlchemy==2.0.35
+fastapi[standard]==0.115.0
+pyjwt==2.9.0
+aiosqlite==0.20.0
+passlib==1.7.4
+python-dotenv==1.0.1
+pur==7.3.2
+segno==1.6.1

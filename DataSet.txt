@@ -1,0 +1,61 @@
+report_data = {
+    # Panoramica del ristorante
+    "restaurant_info": {
+        "name": "Ristorante Bella Italia",
+        "id": "12345",
+        "generation_date": "2024-10-01"
+    },
+    
+    # Guadagni Totali del Mese (ogni data del mese con il guadagno)
+    "monthly_earnings": [
+        {"date": "2024-09-01", "earnings": 500.00},
+        {"date": "2024-09-02", "earnings": 650.00},
+        {"date": "2024-09-03", "earnings": 700.00},
+        # ... (altri giorni del mese)
+        {"date": "2024-09-30", "earnings": 850.00}
+    ],
+    
+    # Guadagno Complessivo (ogni data del mese con ricavo e costo)
+    "monthly_gross_profit": [
+        {"date": "2024-09-01", "total_revenue": 500.00, "total_cost": 200.00, "gross_profit": 300.00},
+        {"date": "2024-09-02", "total_revenue": 650.00, "total_cost": 250.00, "gross_profit": 400.00},
+        {"date": "2024-09-03", "total_revenue": 700.00, "total_cost": 300.00, "gross_profit": 400.00},
+        # ... (altri giorni del mese)
+        {"date": "2024-09-30", "total_revenue": 850.00, "total_cost": 400.00, "gross_profit": 450.00}
+    ],
+    
+    # Prodotto più venduto
+    "best_selling_product": {
+        "name": "Pizza Margherita",
+        "quantity_sold": 120,
+        "total_revenue": 960.00,
+        "category": "Piatto Principale"
+    },
+    
+    # Quantità Prodotti Venduti (ogni prodotto con la sua quantità)
+    "products_sold": [
+        {"name": "Pizza Margherita", "quantity_sold": 120},
+        {"name": "Spaghetti alla Carbonara", "quantity_sold": 80},
+        {"name": "Tiramisu", "quantity_sold": 60},
+        {"name": "Bruschetta", "quantity_sold": 40},
+        {"name": "Insalata Caprese", "quantity_sold": 30}
+    ],
+    
+    # Top 5 Prodotti Venduti
+    "top_5_products": [
+        {"name": "Pizza Margherita", "quantity_sold": 120, "total_revenue": 960.00},
+        {"name": "Spaghetti alla Carbonara", "quantity_sold": 80, "total_revenue": 640.00},
+        {"name": "Tiramisu", "quantity_sold": 60, "total_revenue": 300.00},
+        {"name": "Bruschetta", "quantity_sold": 40, "total_revenue": 160.00},
+        {"name": "Insalata Caprese", "quantity_sold": 30, "total_revenue": 180.00}
+    ],
+    
+    # Andamento degli Ordini (numero di ordini giornalieri)
+    "daily_orders": [
+        {"date": "2024-09-01", "orders": 50},
+        {"date": "2024-09-02", "orders": 65},
+        {"date": "2024-09-03", "orders": 70},
+        # ... (altri giorni del mese)
+        {"date": "2024-09-30", "orders": 85}
+    ]
+}
